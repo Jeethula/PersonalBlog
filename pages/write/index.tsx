@@ -105,6 +105,7 @@ export default function Index() {
         setImage("");
       } else {
         toast.error("due to heavy traffic, your post was not submitted");
+        console.log(response,"error")
         setLoading(false);
       }
     }

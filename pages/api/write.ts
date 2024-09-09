@@ -8,6 +8,7 @@ export default async function POST(req : NextApiRequest, res : NextApiResponse) 
 //   if (token!== `Bearer ${process.env.TOKEN_SECRET}`) {
 //         return res.status(401).json({ error: "Unauthorized" });
 //     }
+try{
     const body = await req.body;
     const { title, content, image, author, authorImg,tags }  = body
     const post = await prisma.post.create({
@@ -21,4 +22,8 @@ export default async function POST(req : NextApiRequest, res : NextApiResponse) 
         },
     });
     return res.status(200).json(post);
+}catch(e){
+    console.log(e)
+    return res.status(500).json({error:"Internal Server Error"})
+}
 }
