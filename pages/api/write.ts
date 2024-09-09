@@ -17,7 +17,7 @@ export default async function POST(req : NextApiRequest, res : NextApiResponse) 
             image,
             author,
             authorImg,
-            tags:[tags],
+            tags:tags,
         },
     });
     return res.status(200).json(post);
