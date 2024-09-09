@@ -24,7 +24,7 @@ model Post {
   authorImg   String?
   comments    Comment[]
   createdAt   DateTime  @default(now())
-  tags        String
+  tags        String[]
 }
 
 model Comment {
