@@ -209,7 +209,7 @@ function PostComponent({post}:{post:Post}) {
                 <h1 style={{ backgroundColor }} className={`font-bold   block sm:hidden  h-fit text-white w-fit p-1 px-2 text-sm rounded-2xl`}>{post?.tags[0]}</h1>
                { post?.image &&<div className="flex justify-center"><Image src={post?.image} alt="author" width={200} height={150} /> </div> }
                {isspoiler?
-               <div className=" h-56 w-full bg-black/80 blur-sm  rounded-md flex flex-col mt-2 ">
+               <div className=" h-56 w-full bg-black/80  rounded-md flex flex-col mt-2 ">
                 <h1 className=" text-gray-300 text-lg text-center p-5">This post contains spoilers</h1>
                 <button className="text-white hover:text-white/40 font-semibold flex gap-x-1 items-center justify-center" onClick={()=>{setIsspoiler(false)}}><FaEyeSlash />See Post</button>
                </div>
