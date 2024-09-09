@@ -184,7 +184,7 @@ function PostPage() {
     }
   }
 
-  if (!postId || !data) {
+  if(Object.keys(data).length === 0 || comments.length === 0 || postId === null || !postId || !data || !comments){
     return <div><LoadingPageUi /></div>;
   }
 
@@ -228,6 +228,8 @@ function PostPage() {
 
 
   return (
+    <main> 
+    { !data || !comments || !postId ? <div><LoadingPageUi /></div> :
     <div className="lg:w-[55%] lg:p-10 p-5 lg:mx-60  ">
     <h1 className="hover:underline text-blue-700 text-2xl cursor-pointer flex gap-x-2 items-center " onClick={()=>router.push("/")}><IoMdArrowRoundBack /> back to posts</h1>
       <div className="flex flex-col gap-y-3 mt-5">
@@ -276,6 +278,8 @@ function PostPage() {
 
       </div>
     </div>
+    }
+    </main>
   );
 }
 
