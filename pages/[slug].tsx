@@ -22,6 +22,7 @@ function PostPage() {
   const [loadingPost, setLoadingPost] = useState<boolean>(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false)
+  const [isLoading , setIsLoading] = useState<boolean>(true);
   const router = useRouter();
 
   function gettingLikedArray(){
@@ -65,7 +66,7 @@ function PostPage() {
         setTimeout(() => {
         handleAddLike();
           isTimeoutActiveLike = false; 
-        }, 30000);
+        }, 1000);
     }
 
     const handleAddLike = async ()=>{
@@ -107,7 +108,7 @@ function PostPage() {
         setTimeout(() => {
           handleAddDislike();
           isTimeoutActiveDislike = false; 
-        }, 30000);
+        }, 1000);
     }
 
     const handleAddDislike = async ()=>{
@@ -179,14 +180,21 @@ function PostPage() {
       });
       const data = await res.json();
       setComments(data);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching comments:", error);
     }
   }
 
-  if(Object.keys(data).length === 0 || comments.length === 0 || postId === null || !postId || !data || !comments){
+  if(Object.keys(data).length === 0 || postId === null || !postId || !data || !comments){
     return <div><LoadingPageUi /></div>;
   }
+
+  if(isLoading){
+    return <div><LoadingPageUi /></div>;
+  }
+
+
 
   const handlePostComment = async ()=>{
     if(!comment){
@@ -229,10 +237,10 @@ function PostPage() {
 
   return (
     <main> 
-    { !data || !comments || !postId ? <div><LoadingPageUi /></div> :
+    { !data || !comments || !postId || Object.keys(data).length === 0  ? <div><LoadingPageUi /></div> :
     <div className="lg:w-[55%] lg:p-10 p-5 lg:mx-60  ">
     <h1 className="hover:underline text-blue-700 text-2xl cursor-pointer flex gap-x-2 items-center " onClick={()=>router.push("/")}><IoMdArrowRoundBack /> back to posts</h1>
-      <div className="flex flex-col gap-y-3 mt-5">
+      <div className="flex flex-col gap-y-3 mt-5 w-full">
       <div className="flex items-center gap-x-5"> 
         <div className="flex items-center gap-x-2">
         { data?.authorImg &&  <Image src={data?.authorImg} alt="author" width={50} height={50} />}
@@ -241,10 +249,10 @@ function PostPage() {
          <h1 className="text-gray-400 font-semibold"> {formatDate(data?.createdAt)}</h1> 
          <h1 style={{ backgroundColor }} className={`font-bold h-fit hidden sm:block text-white w-fit p-1 px-2 text-sm rounded-2xl`}>{data?.tags[0]}</h1>
          </div>
-        <h1 className="font-bold text-3xl ">{data?.title}</h1>
-        <h1 style={{ backgroundColor }} className={`font-bold h-fit sm:hidden block text-white w-fit p-1 px-2 text-sm rounded-2xl`}>{data?.tags[0]}</h1>
+        <h1 className="font-bold text-3xl">{data?.title}</h1>
+        <h1 style={{ backgroundColor }} className={`font-bold h-fit sm:hidden  text-white w-fit p-1 px-2 text-sm rounded-2xl`}>{data?.tags[0]}</h1>
        { data?.image && <Image src={data?.image} alt={data?.title} width={200} height={150} />}
-        <p className="text-xl font-sans tracking-wide whitespace-pre-line mt-4 bg-slate-50 p-5 rounded-lg text-wrap ">{data?.content}</p>
+        <p className="text-xl font-sans tracking-wide whitespace-pre-line mt-4 bg-slate-50 p-5 rounded-lg text-wrap w-fit">{data?.content}</p>
         <div className="flex items-center justify-between md:w-[80%] w-full">
             <div className="flex gap-x-3">
                 <h1 className="flex items-center gap-x-2 cursor-pointer" onClick={handleLikeClickOne}> 

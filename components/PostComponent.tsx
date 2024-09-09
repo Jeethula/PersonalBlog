@@ -4,9 +4,10 @@ import { formatDate } from "@/utils/formatDate";
 import { BiDislike, BiLike, BiSolidDislike, BiSolidLike } from "react-icons/bi";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { FaEyeSlash } from "react-icons/fa";
 import { Post } from "@/utils/type";
+import toast from "react-hot-toast";
 
 
 
@@ -16,13 +17,20 @@ function PostComponent({post}:{post:Post}) {
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false)
     const [isspoiler, setIsspoiler] = useState(false);
+    const [comment,setComment] = useState("");
+    const [loadingPost, setLoadingPost] = useState(false);
+    const [author,setAuthor] = useState("");
+    const [authorImg,setAuthorImg] = useState("");
     
     function gettingLikedArray(){
-    if(post?.tags[0] === "Spoilers"){
-        setIsspoiler(true);
-    }
+ 
     const likedArray = localStorage.getItem("likedArray") || "[]";
     const dislikedArray = localStorage.getItem("dislikedArray") || "[]";
+    const author = localStorage.getItem("author") || "";
+    const authorImg = localStorage.getItem("authorImg") || "";
+    setAuthor(author);
+    setAuthorImg(authorImg);
+
    
     if(likedArray === "[]" ){
         localStorage.setItem("likedArray", JSON.stringify(["dummy"]));
@@ -43,8 +51,15 @@ function PostComponent({post}:{post:Post}) {
     let isTimeoutActiveLike = false;
     let isTimeoutActiveDislike = false;
 
+    const checkSpolier = ()=>{
+        if(post?.tags[0] === "Spoilers"){
+            setIsspoiler(true);
+            }
+        }
+
     useEffect(() => {
         gettingLikedArray();
+        checkSpolier();
     } ,[]);
 
 
@@ -62,8 +77,10 @@ function PostComponent({post}:{post:Post}) {
         setTimeout(() => {
         handleAddLike();
           isTimeoutActiveLike = false; 
-        }, 30000);
+        }, 1000);
     }
+
+
 
     const handleAddLike = async ()=>{
         if(isLiked){
@@ -104,7 +121,7 @@ function PostComponent({post}:{post:Post}) {
         setTimeout(() => {
           handleAddDislike();
           isTimeoutActiveDislike = false; 
-        }, 30000);
+        }, 1000);
     }
 
     const handleAddDislike = async ()=>{
@@ -136,6 +153,32 @@ function PostComponent({post}:{post:Post}) {
         }
     }
 
+    const handlePostComment = async (post:Post)=>{
+        if(!comment){
+          toast.error("Comment cannot be empty");
+          return;
+        }
+        setLoadingPost(true);
+        try {
+          const res = await fetch(`/api/addcomment`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ postId:post?.id, content:comment,author,authorImg }),
+          });
+          const data = await res.json();
+          if(data){
+            setComment("");
+            toast.success("Comment posted successfully");
+            setLoadingPost(false);
+          }
+        } catch (error) {
+          console.error("Error posting comment:", error);
+          setLoadingPost(false);
+        }
+      }
+
     const tagColors: { [key: string]: string } = {
         Rants: 'red',
         General: 'blue',
@@ -166,8 +209,7 @@ function PostComponent({post}:{post:Post}) {
                 <h1 style={{ backgroundColor }} className={`font-bold   block sm:hidden  h-fit text-white w-fit p-1 px-2 text-sm rounded-2xl`}>{post?.tags[0]}</h1>
                { post?.image &&<div className="flex justify-center"><Image src={post?.image} alt="author" width={200} height={150} /> </div> }
                {isspoiler?
-               <div className=" h-56 w-full bg-black rounded-md flex flex-col mt-2 ">
-                <h1>Spoiler Alert </h1>
+               <div className=" h-56 w-full bg-black/80 blur-sm  rounded-md flex flex-col mt-2 ">
                 <h1 className=" text-gray-300 text-lg text-center p-5">This post contains spoilers</h1>
                 <button className="text-white hover:text-white/40 font-semibold flex gap-x-1 items-center justify-center" onClick={()=>{setIsspoiler(false)}}><FaEyeSlash />See Post</button>
                </div>
@@ -194,10 +236,13 @@ function PostComponent({post}:{post:Post}) {
                 </div>
             </div>
             <div>
-                <input type="text" onClick={handleReadmore} placeholder="Add a comment" className="border-2 border-black/3 rounded-lg p-1 px-3 w-full" />
+                <textarea  value={comment} onChange={(e:ChangeEvent<HTMLTextAreaElement>)=>{setComment(e.target.value)}} placeholder="Add a comment" className="border-2 border-black/3 rounded-lg h-10 p-1 px-3 w-full" />
+                {comment.length > 0 && !loadingPost && <button className="bg-blue-600 hover:bg-blue-700 font-semibold text-white p-1 px-3 rounded-lg mt-1" onClick={()=>handlePostComment(post)}>Comment</button>}
+                {loadingPost && <h1 className="bg-gray-400 font-semibold h-fit w-fit p-1 px-3 text-black rounded-lg">Posting...</h1>}
             </div>
         </div>
     );
 }
 
 export default PostComponent;
+
