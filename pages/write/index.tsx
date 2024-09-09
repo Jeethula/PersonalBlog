@@ -1,20 +1,21 @@
 "use client"
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import Layout from "../layout";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-export default function index() {
+export default function Index() {
     const [content, setContent] = useState("");
     const [image, setImage] = useState("");
     const [title, setTitle] = useState("");
     const [tags, setTags] = useState<string>("General");
-    const [maxLength, setMaxLength] = useState(70);
+    // const [maxLength, setMaxLength] = useState(70);
     const [author, setAuthor] = useState<string | null>(null);
     const [authorImg, setAuthorImg] = useState<string | null>(null);
     const [Loading, setLoading] = useState(false);
     const options =["Rants", "General","Spoilers","Technology", "Programming", "Lifestyle", "Entertainment"];
     const router = useRouter();
+    const maxLength = 70;
     useEffect(() => {
       const storedAuthor = localStorage.getItem('author');
       const storedAuthorImg = localStorage.getItem('authorImg');
@@ -31,12 +32,12 @@ export default function index() {
       }
     }, []);
   
-    const handleTitleChange = (event: any) => {
+    const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const newTitle = event.target.value.slice(0, maxLength);
       setTitle(newTitle);
     };
       
-    const handleContentChange = (event: any) => {
+    const handleContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newContent = event.target.value;
       setContent(newContent);
     };
@@ -44,19 +45,18 @@ export default function index() {
     function convertDriveUrlToThumbnailUrl(url: string): string {
       console.log(url);
       const match = url.match(/\/(?:file|folder)\/d\/([^\/]+)\/?(view)?/);
-      console.log(match, "aa")
       if (match) {
         const fileId = match[1];
-        console.log(fileId);
         setImage(`https://drive.google.com/thumbnail?id=${fileId}`);
         return `https://drive.google.com/thumbnail?id=${fileId}`;
       } else {
         toast.error("Invalid Google Drive URL format");
+        setLoading(false);
         return "";
       }
     }
   
-    const handleSubmit = async (event: any) => {
+    const handleSubmit = async (event:ChangeEvent<HTMLFormElement>) => {
       setLoading(true);
       event.preventDefault();
       if (title.length < 5) {
@@ -71,7 +71,7 @@ export default function index() {
         setLoading(false);
         return toast.error("Author information not found , please refresh the page");
       }
-      let convertedImage: any = "";
+      let convertedImage: string = "";
       if (image) {
         const thumbnailUrl = convertDriveUrlToThumbnailUrl(image);
         if (thumbnailUrl === "") {
@@ -79,8 +79,6 @@ export default function index() {
         }
         convertedImage = thumbnailUrl;
       }
-  
-      console.log("posting", convertedImage);
   
       const response = await fetch("/api/write", {
         method: "POST",

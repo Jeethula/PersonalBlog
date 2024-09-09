@@ -8,12 +8,14 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import CommentsComponent from "@/components/CommentsComponent";
 import toast from "react-hot-toast";
 import LoadingPageUi from "@/components/LoadingPageUi";
+import { Comment }from "@/utils/type";
+import { Post } from "@/utils/type";
 
 function PostPage() {
   const pathname = usePathname();
-  const [postId, setPostId] = useState<string | null>(null);
-  const [comments, setComments] = useState<any>(null);
-  const [data, setData] = useState<any>(null);
+  const [postId, setPostId] = useState<string |null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [data, setData] = useState<Post>({"id":0,"title":"","image":"","content":"","like":0,"dilike":0,"author":"","authorImg":"","createdAt":"","tags":[]});
   const [comment,setComment] = useState<string>("");
   const [author,setAuthor] = useState<string>("");
   const [authorImg,setAuthorImg] = useState<string>("");
@@ -32,18 +34,21 @@ function PostPage() {
     if(dislikedArray === "[]" ){
         localStorage.setItem("dislikedArray", JSON.stringify(["dummy"]));
     }
+    if(data?.id !== null && data?.id !== undefined){
     if(likedArray?.includes(data?.id.toString())){
         setIsLiked(true);
     }
     if(dislikedArray?.includes(data?.id.toString())){
         setIsDisliked(true);
     }
+   }
     }
 
     let likeCount = data?.like;
     let dislikeCount = data?.dilike;
     let isTimeoutActiveLike = false;
     let isTimeoutActiveDislike = false;
+    
 
     useEffect(() => {
         gettingLikedArray();
@@ -60,7 +65,7 @@ function PostPage() {
         setTimeout(() => {
         handleAddLike();
           isTimeoutActiveLike = false; 
-        }, 10000);
+        }, 30000);
     }
 
     const handleAddLike = async ()=>{
@@ -102,7 +107,7 @@ function PostPage() {
         setTimeout(() => {
           handleAddDislike();
           isTimeoutActiveDislike = false; 
-        }, 10000);
+        }, 30000);
     }
 
     const handleAddDislike = async ()=>{
@@ -190,8 +195,6 @@ function PostPage() {
     }
     setLoadingPost(true);
     try {
-      console.log("posting comment")
-      console.log(postId, comment,author,authorImg ,"posting comment")
       const res = await fetch(`/api/addcomment`, {
         method: "POST",
         headers: {
@@ -201,7 +204,6 @@ function PostPage() {
       });
       const data = await res.json();
       if(data){
-        console.log(data)
         fetchComments(postId);
         setComment("");
         setLoadingPost(false);
@@ -221,8 +223,9 @@ function PostPage() {
     Lifestyle: 'orange',
     Entertainment: 'brown',
 };
-  const tag = data?.tags[0] || '';
-  const backgroundColor:any = tagColors[tag] || 'gray';
+  const tag:string = data?.tags[0] || '';
+  const backgroundColor:string = tagColors[tag] || 'gray';
+
 
   return (
     <div className="lg:w-[55%] lg:p-10 p-5 lg:mx-60  ">
@@ -230,7 +233,7 @@ function PostPage() {
       <div className="flex flex-col gap-y-3 mt-5">
       <div className="flex items-center gap-x-5"> 
         <div className="flex items-center gap-x-2">
-          <Image src={data?.authorImg} alt="author" width={50} height={50} />
+        { data?.authorImg &&  <Image src={data?.authorImg} alt="author" width={50} height={50} />}
           <h1 className="font-semibold">{data?.author}</h1>
         </div>
          <h1 className="text-gray-400 font-semibold"> {formatDate(data?.createdAt)}</h1> 
@@ -264,8 +267,8 @@ function PostPage() {
         <div className="mt-5">
           <h1 className="font-semibold text-2xl">Comments </h1>
           <div className="flex flex-col gap-y-3 mt-3">
-            {comments && comments.length === 0 && <h1 className="text-gray-500 text-lg">No comments yet</h1>}
-            {comments && comments.map((comment: any) => (
+            {comments && comments?.length === 0 && <h1 className="text-gray-500 text-lg">No comments yet</h1>}
+            {comments && comments.map((comment: Comment) => (
                 <CommentsComponent key={comment.id} comment={comment} />
             ))}
           </div>

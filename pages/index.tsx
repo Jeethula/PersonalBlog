@@ -1,5 +1,5 @@
 import Layout from "./layout";
-import type { InferGetServerSidePropsType, GetServerSideProps } from 'next';
+import type { InferGetServerSidePropsType } from 'next';
 import prisma from '@/utils/prisma';
 import PostComponent from "@/components/PostComponent";
 
@@ -34,11 +34,11 @@ export default function Home({data}: InferGetServerSidePropsType<typeof getServe
 
   return (
     <Layout>
-      <div className="container">
+      <div>
       <h1 className="text-lg sm:text-xl md:text-3xl text-wrap mt-2 mb-4 first-letter:tracking-widest first-letter:text-6xl md:first-letter:text-7xl first-letter:font-bold first-letter:float-left">A safe place for open discussion, <br />nonymity is guaranteed.</h1>
        {
-        data.map((post: any) => (
-          <div className="py-3">
+        data.map((post) => (
+          <div className="py-3" key={post?.id}>
           <PostComponent post={post} key={post.id}/>
           </div>
         ))

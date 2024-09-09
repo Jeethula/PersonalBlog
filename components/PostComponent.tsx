@@ -5,10 +5,12 @@ import { BiDislike, BiLike, BiSolidDislike, BiSolidLike } from "react-icons/bi";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { FaEyeSlash } from "react-icons/fa";
+import { Post } from "@/utils/type";
 
 
 
-function PostComponent({post}:any) {
+function PostComponent({post}:{post:Post}) {
 
     const router = useRouter();
     const [isLiked, setIsLiked] = useState(false);
@@ -16,6 +18,9 @@ function PostComponent({post}:any) {
     const [isspoiler, setIsspoiler] = useState(false);
     
     function gettingLikedArray(){
+    if(post?.tags[0] === "Spoilers"){
+        setIsspoiler(true);
+    }
     const likedArray = localStorage.getItem("likedArray") || "[]";
     const dislikedArray = localStorage.getItem("dislikedArray") || "[]";
    
@@ -40,8 +45,7 @@ function PostComponent({post}:any) {
 
     useEffect(() => {
         gettingLikedArray();
-    }
-    , [likeCount, dislikeCount]);
+    } ,[]);
 
 
     const handleReadmore = ()=>{
@@ -58,7 +62,7 @@ function PostComponent({post}:any) {
         setTimeout(() => {
         handleAddLike();
           isTimeoutActiveLike = false; 
-        }, 10000);
+        }, 30000);
     }
 
     const handleAddLike = async ()=>{
@@ -100,7 +104,7 @@ function PostComponent({post}:any) {
         setTimeout(() => {
           handleAddDislike();
           isTimeoutActiveDislike = false; 
-        }, 10000);
+        }, 30000);
     }
 
     const handleAddDislike = async ()=>{
@@ -141,14 +145,14 @@ function PostComponent({post}:any) {
         Lifestyle: 'orange',
         Entertainment: 'brown',
     };
-      const tag = post?.tags[0] || '';
-      const backgroundColor:any = tagColors[tag] || 'gray';
+      const tag:string = post?.tags[0] || '';
+      const backgroundColor:string = tagColors[tag] || 'gray';
 
     return (
-        <div key={post?.id} className={`border ${!isspoiler?"":"backdrop-opacity-60"} lg:w-[70%] shadow-lg p-5 flex flex-col gap-1 rounded-lg`}>
+        <div key={post?.id} className={`border lg:w-[70%] shadow-lg p-5 flex flex-col gap-1 rounded-lg`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-x-3">
-                     <Image src={post?.authorImg} alt="author" width={40} height={40} />
+                    { post?.authorImg && <Image src={post?.authorImg} alt="author" width={40} height={40} /> }
                      <h1 className="font-semibold text-gray-500">{post?.author}</h1>
                      <h1 style={{ backgroundColor }} className={`font-bold  hidden sm:block  h-fit text-white w-fit text-sm p-1 px-2 rounded-2xl`}>{post?.tags[0]}</h1>
                 </div>
@@ -161,8 +165,18 @@ function PostComponent({post}:any) {
                 <Link href={`/${post?.id}`} className="font-medium text-2xl hover:underline">{post?.title}</Link>
                 <h1 style={{ backgroundColor }} className={`font-bold   block sm:hidden  h-fit text-white w-fit p-1 px-2 text-sm rounded-2xl`}>{post?.tags[0]}</h1>
                { post?.image &&<div className="flex justify-center"><Image src={post?.image} alt="author" width={200} height={150} /> </div> }
-                <p className={`text-lg text-wrap font-sans mt-4 tracking-wide whitespace-pre-line line-clamp-4  `}>{post?.content}</p>
+               {isspoiler?
+               <div className=" h-56 w-full bg-black rounded-md flex flex-col mt-2 ">
+                <h1>Spoiler Alert </h1>
+                <h1 className=" text-gray-300 text-lg text-center p-5">This post contains spoilers</h1>
+                <button className="text-white hover:text-white/40 font-semibold flex gap-x-1 items-center justify-center" onClick={()=>{setIsspoiler(false)}}><FaEyeSlash />See Post</button>
+               </div>
+                :
+                <div>
+                <p className={`text-lg text-wrap font-sans mt-4 tracking-wide whitespace-pre-line line-clamp-4  `}>{post?.content}</p> 
                 {post?.content.length > 50 && <h1 className="text-blue-700 hover:text-blue-900 underline cursor-pointer" onClick={handleReadmore}>Read more</h1>}
+                </div> 
+                }
             </div>
             <div className="flex flex-row justify-between mt-3 mb-2">
                 <div className="flex gap-x-3">
