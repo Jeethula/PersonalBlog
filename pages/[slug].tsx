@@ -84,6 +84,8 @@ function PostPage() {
             },
             body: JSON.stringify({ id: data?.id }),
         });
+        const dataLike = await res.json();
+        console.log(dataLike);
         return;
     }
     else{
@@ -138,6 +140,8 @@ const handleAddDislike = async ()=>{
           },
           body: JSON.stringify({ id: data?.id }),
       });
+      const response = await res.json();
+      console.log(response);
       return
   }
   else{

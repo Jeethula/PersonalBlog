@@ -91,6 +91,8 @@ function PostComponent({post}:{post:Post}) {
                 },
                 body: JSON.stringify({ id: post?.id }),
             });
+            const data = await res.json();
+            console.log(data)
             return;
         }
         else{
@@ -145,6 +147,8 @@ function PostComponent({post}:{post:Post}) {
                 },
                 body: JSON.stringify({ id: post?.id }),
             });
+            const data = await res.json();
+            console.log(data)
             return
         }
         else{
