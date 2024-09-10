@@ -42,11 +42,15 @@ function Index() {
     showPosts(option, posts);
   }
 
+  if(!posts){
+    return <h1>Loading...</h1>
+  }
+
   return (
     <Layout>
       <div>
         <h1 className="text-3xl mt-2 mb-2 text-wrap">Read posts about specific tags,</h1>
-        <input type="text" placeholder="Search Posts by their title" className="h-8 md:w-[500px] w-full p-3 border rounded-lg" onChange={(e)=>{setSearch(e.target.value)}} onFocus={()=>{setIsSearch(true)}} onBlur={()=>{setIsSearch(false),setSearch("")}} />
+        <input type="text" placeholder="Search Posts by their title" className="h-8 md:w-[500px] w-full mt-3 mb-3 p-3 border rounded-lg" onChange={(e)=>{setSearch(e.target.value)}} onFocus={()=>{setIsSearch(true)}} onBlur={()=>{setIsSearch(false),setSearch("")}} />
        { !IsSearch && search.length === 0 && <div className="flex overflow-x-auto scrollbar">
           {options.map((option) => (
             <div
