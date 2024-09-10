@@ -23,6 +23,8 @@ function PostPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false)
   const [isLoading , setIsLoading] = useState<boolean>(true);
+  const [likeonce,setLikeonce] = useState(false);
+  const [dislikeonce,setDislikeonce] = useState(false);
   const router = useRouter();
 
   function gettingLikedArray(){
@@ -57,88 +59,111 @@ function PostPage() {
     , [likeCount, dislikeCount]);
 
     const handleLikeClickOne = async () => {
-        if (isTimeoutActiveLike) {
-            return; 
-          }
-        isTimeoutActiveLike = true;
-        setIsLiked(!isLiked);
-        setIsDisliked(false); 
-        setTimeout(() => {
-        handleAddLike();
-          isTimeoutActiveLike = false; 
-        }, 1000);
-    }
+      if (isTimeoutActiveLike) {
+          return; 
+        }
+      isTimeoutActiveLike = true;
+      setIsLiked(!isLiked);
+      // setLikeonce(true);
+      setIsDisliked(false); 
+      setTimeout(() => {
+      handleAddLike();
+        isTimeoutActiveLike = false; 
+      }, 300);
+  }
 
-    const handleAddLike = async ()=>{
-        if(isLiked){
-            likeCount -= 1;
-            setIsLiked(false);
-        }
-        else{
-            likeCount += 1;
-            setIsLiked(true);
-        }
-        const response = await fetch(`/api/likepost`, {
+  const handleAddLike = async ()=>{
+    if(isLiked){
+        likeCount -= 1;
+        localStorage.setItem("likedArray", JSON.stringify(JSON.parse(localStorage.getItem("likedArray") || "[]").filter((id: string) => id !== data.id.toString())));
+        setIsLiked(false);
+        const res = await fetch(`/api/likepostDislike`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ id: data?.id }),
         });
-        const datares = await response.json();
-        if(datares){
-            likeCount = datares.upvote;
-            const likedArray = localStorage.getItem("likedArray") || "[]";
-            const dislikedArray = localStorage.getItem("dislikedArray") || "[]";
-            if(dislikedArray.includes(datares.id.toString())){
-                dislikeCount = dislikeCount - 1;
-                localStorage.setItem("dislikedArray", JSON.stringify(JSON.parse(dislikedArray).filter((id: string) => id !== datares.id.toString())));
-            }
-            localStorage.setItem("likedArray", JSON.stringify([...JSON.parse(likedArray), datares.id.toString()]));
-        }
+        return;
     }
+    else{
+        likeCount += 1;
+        setIsLiked(true);
+        setLikeonce(true);
+    }
+    const resLike = await fetch(`/api/likepost`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: data?.id }),
+    });
+    const dataLike = await resLike.json();
+    if(dataLike){
+        likeCount = dataLike.upvote;
+        // setLikeonce(true);
+        const likedArray = localStorage.getItem("likedArray") || "[]";
+        const dislikedArray = localStorage.getItem("dislikedArray") || "[]";
+        if(dislikedArray.includes(dataLike.id.toString())){
+            dislikeCount = dislikeCount - 1;
+            localStorage.setItem("dislikedArray", JSON.stringify(JSON.parse(dislikedArray).filter((id: string) => id !== dataLike.id.toString())));
+        }
+        localStorage.setItem("likedArray", JSON.stringify([...JSON.parse(likedArray), dataLike.id.toString()]));
+    }
+}
 
-    const handleDislikeClickOne = async () => {
-        if (isTimeoutActiveDislike) {
-            return; 
-          }
-        isTimeoutActiveDislike = true;
-        setIsLiked(false); 
-        setIsDisliked(!isDisliked);
-        setTimeout(() => {
-          handleAddDislike();
-          isTimeoutActiveDislike = false; 
-        }, 1000);
+const handleDislikeClickOne = async () => {
+  if (isTimeoutActiveDislike) {
+      return; 
     }
+  isTimeoutActiveDislike = true;
+  setIsDisliked(!isDisliked);
+  setIsLiked(false); 
+  // setDislikeonce(false);
+  setTimeout(() => {
+    handleAddDislike();
+    isTimeoutActiveDislike = false; 
+  }, 1000);
+}
 
-    const handleAddDislike = async ()=>{
-        if(isDisliked){
-            dislikeCount -= 1;
-            setIsDisliked(false);
-        }
-        else{
-            dislikeCount += 1;
-            setIsDisliked(true);
-        }
-        const response2 = await fetch('/api/dislikepost', {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id: data?.id }),
-        })
-        const datares = await response2.json();
-        if (datares) {
-            dislikeCount = datares.upvote;
-            const likedArray = localStorage.getItem("likedArray") || "[]";
-            const dislikedArray = localStorage.getItem("dislikedArray") || "[]";
-            if(likedArray.includes(datares.id.toString())){
-                likeCount = likeCount - 1;
-                localStorage.setItem("likedArray", JSON.stringify(JSON.parse(likedArray).filter((id: string) => id !== datares.id.toString())));
-            }
-            localStorage.setItem("dislikedArray", JSON.stringify([...JSON.parse(dislikedArray), datares.id.toString()]));
-        }
-    }
+const handleAddDislike = async ()=>{
+  if(isDisliked){
+      dislikeCount -= 1;
+      localStorage.setItem("dislikedArray", JSON.stringify(JSON.parse(localStorage.getItem("dislikedArray") || "[]").filter((id: string) => id !== data.id.toString())));
+      setIsDisliked(false);
+      const res = await fetch('/api/dislikepostDislike', {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id: data?.id }),
+      });
+      return
+  }
+  else{
+      dislikeCount += 1;
+      setIsDisliked(true);
+      setDislikeonce(true);
+  }
+  const resDislike = await fetch('/api/dislikepost', {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: data?.id }),
+  })
+  const dataDislike = await resDislike.json();
+  if (data) {
+      dislikeCount = dataDislike.upvote;
+      const likedArray = localStorage.getItem("likedArray") || "[]";
+      const dislikedArray = localStorage.getItem("dislikedArray") || "[]";
+      if(likedArray.includes(dataDislike.id.toString())){
+          likeCount = likeCount - 1;
+          localStorage.setItem("likedArray", JSON.stringify(JSON.parse(likedArray).filter((id: string) => id !== dataDislike.id.toString())));
+      }
+      localStorage.setItem("dislikedArray", JSON.stringify([...JSON.parse(dislikedArray), dataDislike.id.toString()]));
+  }
+}
 
   useEffect(() => {
     if (pathname) {
@@ -257,11 +282,11 @@ function PostPage() {
             <div className="flex gap-x-3">
                 <h1 className="flex items-center gap-x-2 cursor-pointer" onClick={handleLikeClickOne}> 
                   {isLiked ? <BiSolidLike fill="green" size={25} /> : <BiLike fill="green" size={25} /> } 
-                  {isLiked ? likeCount + 1 : likeCount}
+                  {likeonce ? likeCount + 1 : likeCount}
                 </h1>
                 <h1 className="flex items-center gap-x-2 cursor-pointer" onClick={handleDislikeClickOne}> 
                   {isDisliked ? <BiSolidDislike fill="#EF233C" size={25} />  : <BiDislike fill='#EF233C' size={25} /> } 
-                  {isDisliked ? dislikeCount +1 : dislikeCount}
+                  {dislikeonce ? dislikeCount +1 : dislikeCount}
                 </h1>
             </div>
             <div>

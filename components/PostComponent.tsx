@@ -21,6 +21,8 @@ function PostComponent({post}:{post:Post}) {
     const [loadingPost, setLoadingPost] = useState(false);
     const [author,setAuthor] = useState("");
     const [authorImg,setAuthorImg] = useState("");
+    const [likeonce,setLikeonce] = useState(false);
+    const [dislikeonce,setDislikeonce] = useState(false);
     
     function gettingLikedArray(){
  
@@ -57,12 +59,6 @@ function PostComponent({post}:{post:Post}) {
             }
         }
 
-    useEffect(() => {
-        gettingLikedArray();
-        checkSpolier();
-    } ,[]);
-
-
     const handleReadmore = ()=>{
         router.push(`/${post?.id}`);
     }
@@ -73,11 +69,12 @@ function PostComponent({post}:{post:Post}) {
           }
         isTimeoutActiveLike = true;
         setIsLiked(!isLiked);
+        // setLikeonce(true);
         setIsDisliked(false); 
         setTimeout(() => {
         handleAddLike();
           isTimeoutActiveLike = false; 
-        }, 1000);
+        }, 300);
     }
 
 
@@ -85,11 +82,21 @@ function PostComponent({post}:{post:Post}) {
     const handleAddLike = async ()=>{
         if(isLiked){
             likeCount -= 1;
+            localStorage.setItem("likedArray", JSON.stringify(JSON.parse(localStorage.getItem("likedArray") || "[]").filter((id: string) => id !== post.id.toString())));
             setIsLiked(false);
+            const res = await fetch(`/api/likepostDislike`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id: post?.id }),
+            });
+            return;
         }
         else{
             likeCount += 1;
             setIsLiked(true);
+            setLikeonce(true);
         }
         const res = await fetch(`/api/likepost`, {
             method: "POST",
@@ -101,6 +108,7 @@ function PostComponent({post}:{post:Post}) {
         const data = await res.json();
         if(data){
             likeCount = data.upvote;
+            // setLikeonce(true);
             const likedArray = localStorage.getItem("likedArray") || "[]";
             const dislikedArray = localStorage.getItem("dislikedArray") || "[]";
             if(dislikedArray.includes(post.id.toString())){
@@ -116,8 +124,9 @@ function PostComponent({post}:{post:Post}) {
             return; 
           }
         isTimeoutActiveDislike = true;
-        setIsLiked(false); 
         setIsDisliked(!isDisliked);
+        setIsLiked(false); 
+        // setDislikeonce(false);
         setTimeout(() => {
           handleAddDislike();
           isTimeoutActiveDislike = false; 
@@ -127,11 +136,21 @@ function PostComponent({post}:{post:Post}) {
     const handleAddDislike = async ()=>{
         if(isDisliked){
             dislikeCount -= 1;
+            localStorage.setItem("dislikedArray", JSON.stringify(JSON.parse(localStorage.getItem("dislikedArray") || "[]").filter((id: string) => id !== post.id.toString())));
             setIsDisliked(false);
+            const res = await fetch('/api/dislikepostDislike', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id: post?.id }),
+            });
+            return
         }
         else{
             dislikeCount += 1;
             setIsDisliked(true);
+            setDislikeonce(true);
         }
         const res = await fetch('/api/dislikepost', {
             method: "POST",
@@ -152,6 +171,11 @@ function PostComponent({post}:{post:Post}) {
             localStorage.setItem("dislikedArray", JSON.stringify([...JSON.parse(dislikedArray), post.id.toString()]));
         }
     }
+
+    useEffect(() => {
+        gettingLikedArray();
+        checkSpolier();
+    } ,[]);
 
     const handlePostComment = async (post:Post)=>{
         if(!comment){
@@ -224,11 +248,13 @@ function PostComponent({post}:{post:Post}) {
                 <div className="flex gap-x-3">
                     <h1 className="flex items-center gap-x-2 cursor-pointer" onClick={handleLikeClickOne}> 
                     {isLiked ? <BiSolidLike fill="green" size={25} /> : <BiLike fill="green" size={25} /> } 
-                    {isLiked ? likeCount + 1 : likeCount}
+                    {likeonce ? likeCount + 1 : likeCount}
+                    {/* {likeCount} */}
                     </h1>
                     <h1 className="flex items-center gap-x-2 cursor-pointer" onClick={handleDislikeClickOne}> 
                     {isDisliked ? <BiSolidDislike fill="#EF233C" size={25} />  : <BiDislike fill='#EF233C' size={25} /> } 
-                    {isDisliked ? dislikeCount +1 : dislikeCount}
+                    {dislikeonce ? dislikeCount +1 : dislikeCount}
+                    {/* {dislikeCount} */}
                     </h1>
                 </div>
                 <div>
